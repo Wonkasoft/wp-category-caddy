@@ -1,8 +1,7 @@
 <?php
 /*
-* Plugin Name: WP Category Caddy
-* Plugin URI:  https://wonkasoft.com/wp-category-list-widget
-* Description: Basic WordPress Plugin for a custom widget for listing selected categories
+* Class for WP Category Caddy
+* 
 * Version:     1.0.0
 * Author:      Wonkasoft
 * Author URI:  https://wonkasoft.com
@@ -14,30 +13,71 @@ class wp_category_caddy extends WP_Widget {
 
   // Setup widget name description etc...
   function __construct() {
-    parent::__construct(false, $name = __( 'WP Category Caddy' ) );
+    $caddy_ops = array(
+      'classname' => 'caddy_categories',
+      'description' => __('The Archives you select by category to be carried by your caddy.'),
+      'customize_selective_refresh' => true,
+      );
+    parent::__construct( false, __( 'Category Caddy' ), $caddy_ops );
   }
-
-
-  // back-end
-  public function form( $instance ) {
-    
-  }
-  public function update( $new_instance, $old_instance ) {
-    
-  }
+  
   // front-end
+  /**
+   * Outputs the content for the current Category Caddy widget instance.
+   *
+   * @since 1.0.0
+   * @access public
+   *
+   * @param array $instance Settings for the current Category Caddy widget instance.
+   */
   public function widget( $args, $instance ) {
     
   } 
-}
 
-add_action( 'widgets_init', function() {
-  register_widget( 'wp_category_caddy' );
-} );
+  /**
+   * Handles updating settings for the current Category Caddy widget instance.
+   *
+   * @since 1.0.0
+   * @access public
+   *
+   * @param array $new_instance New settings for this instance as input by the user via
+   *                            WP_Widget_Archives::form().
+   * @param array $old_instance Old settings for this instance.
+   * @return array Updated settings to save.
+   */
+  public function update( $new_instance, $old_instance ) {
 
-add_filter( 'plugin_action_links_' . $plugin_name, 'wp_category_caddy_add_settings_link_filter', 10, 1 );
-function wp_category_caddy_add_settings_link_filter( $links ) { 
-  $donate_link = '<a href="https://paypal.me/Wonkasoft" target="blank">Donate</a>';
-  array_unshift($links, $settings_link, $support_link, $donate_link); 
-  return $links; 
+  }
+
+  // back-end
+  /**
+   * Outputs the settings form for the Category Caddy widget.
+   *
+   * @since 1.0.0
+   * @access public
+   *
+   * @param array $instance Current settings.
+   */
+  public function form( $instance ) {
+    $instance = wp_parse_args( (array) $instance, array( 'title' => '', 'count' => 0, 'dropdown' => '') );
+    $title = sanitize_text_field( $instance['title'] );
+    $cate = get_categories( array(
+      'orderby' => 'name',
+      'order' => 'ASC'
+      ) );
+    ?>
+    <p><label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:'); ?></label> <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo esc_attr($title); ?>" /></p>
+    <p><select name="caddy_selected[]" multiple="multiple" style="width: 100%;">
+    <?php
+    foreach ($cate as $key => $value) {
+        ?>
+        <option style="padding: 2px 8px" value="<?php echo $value->name; ?>"><?php echo $value->name; ?></option>
+        <?php
+    }
+    ?>
+    </select>
+    </p>
+    <?php
+    print_r($_POST['caddy_selected']);
+  }
 }
