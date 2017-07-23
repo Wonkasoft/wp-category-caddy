@@ -71,7 +71,7 @@ class wp_category_caddy extends WP_Widget {
    * @access public
    *
    * @param array $new_instance New settings for this instance as input by the user via
-   *                            WP_Widget_Archives::form().
+   *                            WP_Widget::form().
    * @param array $old_instance Old settings for this instance.
    * @return array Updated settings to save.
    */
