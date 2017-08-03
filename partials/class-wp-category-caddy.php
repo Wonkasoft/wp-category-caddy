@@ -38,6 +38,7 @@ class wp_category_caddy extends WP_Widget {
     if ( $title ) {
       echo $args['before_title'] . $title . $args['after_title'];
     }
+
     ?>
     <ul>
     <?php
@@ -48,17 +49,9 @@ class wp_category_caddy extends WP_Widget {
      *
      * @loop that builds out the list of categories IDs from the Caddy Widget.
      */
-    foreach ( $instance['caddy_selected'] as $key => $value ) {
-      $caddy_ids[] = get_cat_ID( $value );
-    }
 
-    $caddy_args = array(
-      'include' => $caddy_ids,
-      'title_li' => '',
-      'show_count' => $instance['count'],
-      );
-  
-    wp_list_categories( $caddy_args );
+    $caddy_ids = get_cat_ID( $instance['caddy_selected'] );
+    
     ?>
     </ul>
     <?php
@@ -79,8 +72,9 @@ class wp_category_caddy extends WP_Widget {
   public function update( $new_instance, $old_instance ) {
     $instance = $old_instance;
     $instance['title'] = sanitize_text_field( $new_instance['title'] );
+    $instance['caddy_page_id'] = $new_instance['caddy_page_id'];
     $instance['count'] = $new_instance['count'] ? 1 : 0;
-    $instance['caddy_selected'] = array_map( 'sanitize_text_field', wp_unslash( $_POST['caddy_selected'] ) );
+    $instance['caddy_selected'] = sanitize_text_field( $instance['caddy_selected'] );
 
     return $instance;
   }
@@ -95,21 +89,52 @@ class wp_category_caddy extends WP_Widget {
    * @param array $instance Current settings.
    */
   public function form( $instance ) {
-    $instance = wp_parse_args( (array) $instance, array( 'title' => '', 'count' => 0 ) );
+    $instance = wp_parse_args( (array) $instance, array(
+    'title' => '', 
+    'count' => 0, 
+    'caddy_selected' => '', 
+    'caddy_page_id' => ''
+    ) );
     $title = sanitize_text_field( $instance['title'] );
-    $selected_options = isset($instance['caddy_selected']) ? $instance['caddy_selected'] : '';
+    $selected_options = isset( $instance['caddy_selected'] ) ? $instance['caddy_selected']: '';
+    $page_selected = isset( $instance['caddy_page_id'] ) ? $instance['caddy_page_id']: '';
+
+    $caddy_pages = get_pages( array(
+      'sort_order'   => 'ASC'
+     ) );
 
     $cate = get_categories( array(
       'orderby' => 'name',
       'order' => 'ASC'
       ) );
     ?>
-    <p><label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label> <input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>" /></p>
-    
-    <p><select name="caddy_selected[]" multiple="multiple" style="width: 100%;">
+    <style type="text/css">.select-dropdown{width:100%;}</style>
+    <p>
+    <label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label> <input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>" /></p>
+    <p>
+    <label for="<?php echo $this->get_field_id( 'caddy_page_id' ); ?>"><?php _e( 'Page to show on:' ); ?></label>
+    <select id="<?php echo $this->get_field_id( 'caddy_page_id' ); ?>" name="<?php echo $this->get_field_name( 'caddy_page_id' ); ?>" class="select-dropdown">
+    <?php
+    foreach ($caddy_pages as $key => $value) {
+      if ( $value->ID == $page_selected ) {
+        ?>
+        <option style="padding: 2px 8px" value="<?php echo $value->ID; ?>" selected><?php echo $value->post_title; ?></option>
+        <?php
+      } else {
+        ?>
+        <option style="padding: 2px 8px" value="<?php echo $value->ID; ?>"><?php echo $value->post_title; ?></option>
+        <?php
+      }
+    }
+    ?>
+    </select>
+    </p>
+    <p>
+    <label for="<?php echo $this->get_field_id( 'caddy_selected' ); ?>"><?php _e( 'Categories:' ); ?></label>
+    <select id="<?php echo $this->get_field_id( 'caddy_selected' ); ?>" name="<?php echo $this->get_field_name( 'caddy_selected' ); ?>" class="select-dropdown">
     <?php
     foreach ($cate as $key => $value) {
-      if ( in_array( $value->name, $selected_options ) ) {
+      if ( $value->name == $selected_options ) {
         ?>
         <option style="padding: 2px 8px" value="<?php echo $value->name; ?>" selected><?php echo $value->name; ?></option>
         <?php
@@ -125,5 +150,6 @@ class wp_category_caddy extends WP_Widget {
     <p><input class="checkbox" type="checkbox"<?php checked( $instance['count'] ); ?> id="<?php echo $this->get_field_id('count'); ?>" name="<?php echo $this->get_field_name('count'); ?>" /> <label for="<?php echo $this->get_field_id('count'); ?>"><?php _e('Show post counts'); ?></label>
     </p>
     <?php
+    var_dump($instance);
   }
 }
