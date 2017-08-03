@@ -32,7 +32,7 @@ class wp_category_caddy extends WP_Widget {
    */
   public function widget( $args, $instance ) {
     
-    $title = apply_filters( 'widget_title', empty( $instance['title'] ) ? __( 'Categories' ) : $instance['title'], $instance, $this->id_base );
+    $title = apply_filters( 'widget_title', empty( $instance['title'] ) ? __( 'Category Caddy' ) : $instance['title'], $instance, $this->id_base );
 
     echo $args['before_widget'];
     if ( $title ) {
@@ -50,8 +50,12 @@ class wp_category_caddy extends WP_Widget {
      * @loop that builds out the list of categories IDs from the Caddy Widget.
      */
 
-    $caddy_ids = get_cat_ID( $instance['caddy_selected'] );
-    
+    $caddy_id = get_cat_ID( $instance['caddy_selected'] );
+    $custom_caddy = array(
+        'caddy_select' => $instance['caddy_selected'],
+        'caddy_select_id' => $caddy_id
+      );
+    wp_get_custom_archives( $custom_caddy );
     ?>
     </ul>
     <?php
@@ -72,9 +76,9 @@ class wp_category_caddy extends WP_Widget {
   public function update( $new_instance, $old_instance ) {
     $instance = $old_instance;
     $instance['title'] = sanitize_text_field( $new_instance['title'] );
-    $instance['caddy_page_id'] = $new_instance['caddy_page_id'];
+    $instance['caddy_page_id'] = sanitize_text_field( $new_instance['caddy_page_id'] );
     $instance['count'] = $new_instance['count'] ? 1 : 0;
-    $instance['caddy_selected'] = sanitize_text_field( $instance['caddy_selected'] );
+    $instance['caddy_selected'] = sanitize_text_field( $new_instance['caddy_selected'] );
 
     return $instance;
   }
@@ -150,6 +154,5 @@ class wp_category_caddy extends WP_Widget {
     <p><input class="checkbox" type="checkbox"<?php checked( $instance['count'] ); ?> id="<?php echo $this->get_field_id('count'); ?>" name="<?php echo $this->get_field_name('count'); ?>" /> <label for="<?php echo $this->get_field_id('count'); ?>"><?php _e('Show post counts'); ?></label>
     </p>
     <?php
-    var_dump($instance);
   }
 }
