@@ -35,3 +35,6 @@ function wp_category_caddy_add_settings_link_filter( $links ) {
   array_unshift( $links, $donate_link ); 
   return $links; 
 }
+
+// Require Class Once
+require plugin_dir_path( __FILE__ ) . 'partials/class-wp-custom-archive-caddy.php';
