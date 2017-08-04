@@ -33,33 +33,38 @@ class wp_category_caddy extends WP_Widget {
   public function widget( $args, $instance ) {
     
     $title = apply_filters( 'widget_title', empty( $instance['title'] ) ? __( 'Category Caddy' ) : $instance['title'], $instance, $this->id_base );
+    if ( ! empty( $instance['caddy_page_id'] ) && is_page( $instance['caddy_page_id'] ) ) {
+      echo $args['before_widget'];
+      if ( $title ) {
+        echo $args['before_title'] . $title . $args['after_title'];
+      }
 
-    echo $args['before_widget'];
-    if ( $title ) {
-      echo $args['before_title'] . $title . $args['after_title'];
+      ?>
+      <ul>
+      <?php
+      /**
+       * Filters the arguments for the Category Caddy widget.
+       *
+       * @since 1.0.0
+       *
+       * @loop that builds out the list of categories IDs from the Caddy Widget.
+       */
+
+      $custom_caddy = array();
+      if ($instance['caddy_selected'] !== 'Uncategorized') {
+        $caddy_id = get_cat_ID( $instance['caddy_selected'] );
+        $custom_caddy = array(
+            'show_post_count' => $instance['count'],
+            'caddy_select' => $instance['caddy_selected'],
+            'caddy_select_id' => $caddy_id
+          );
+      }
+      wp_get_custom_archives( $custom_caddy );
+      ?>
+      </ul>
+      <?php
+      echo $args['after_widget'];
     }
-
-    ?>
-    <ul>
-    <?php
-    /**
-     * Filters the arguments for the Category Caddy widget.
-     *
-     * @since 1.0.0
-     *
-     * @loop that builds out the list of categories IDs from the Caddy Widget.
-     */
-
-    $caddy_id = get_cat_ID( $instance['caddy_selected'] );
-    $custom_caddy = array(
-        'caddy_select' => $instance['caddy_selected'],
-        'caddy_select_id' => $caddy_id
-      );
-    wp_get_custom_archives( $custom_caddy );
-    ?>
-    </ul>
-    <?php
-    echo $args['after_widget'];
   } 
 
   /**
